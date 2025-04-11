@@ -66,3 +66,54 @@ if __name__ == "__main__":
               f"Interest = {results['interest'][i]:.2f}, "
               f"Amortization = {results['amortization'][i]:.2f}, "
               f"Remaining Principal = {results['remaining'][i]:.2f}")
+
+
+
+
+
+
+
+
+
+
+import numpy as np
+
+def calculate_npv(cash_flows, discount_rate):
+    """
+    Calculates the Net Present Value (NPV) of a series of cash flows.
+
+    Parameters:
+      - cash_flows: A list or numpy array of cash flows (payments) for each period.
+      - discount_rate: The discount rate per period as a decimal.
+
+    Returns:
+      - The net present value of the cash flows.
+    """
+    # Ensure cash_flows is a NumPy array and create an array of period numbers starting at 1.
+    cash_flows = np.array(cash_flows)
+    periods = np.arange(1, len(cash_flows) + 1)
+    
+    # Calculate the NPV by discounting each payment accordingly.
+    npv = np.sum(cash_flows / (1 + discount_rate) ** periods)
+    return npv
+
+if __name__ == "__main__":
+    # Test data: payments calculated from a mortgage using a variable rate
+    payments = [8606.64, 8606.64, 8583.29, 8583.29, 8621.58, 8621.58, 
+                8606.65, 8606.65, 8602.38, 8602.38, 8607.51, 8607.51]
+    # For example, assume a discount rate of 0.5% per period.
+    discount_rate = 0.005
+    
+    npv_value = calculate_npv(payments, discount_rate)
+    print(f"Net Present Value of the payments: {npv_value:.2f}")
+
+
+
+
+
+
+
+
+
+
+
