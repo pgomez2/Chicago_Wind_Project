@@ -111,7 +111,27 @@ if __name__ == "__main__":
 
 
 
-
+    principal = 100000
+    # Variable interest rates for each period (array 1)
+    interest_rates = [0.005, 0.005, 0.0045, 0.0045, 0.0055, 0.0055, 0.005, 0.005, 0.0048, 0.0048, 0.0052, 0.0052]
+    
+    payment_results = calculate_payments(principal, interest_rates)
+    
+    print("Mortgage Payment Details:")
+    for i in range(len(interest_rates)):
+        print(f"Period {payment_results['period'][i]}: Payment = {payment_results['payment'][i]:.2f}, "
+              f"Interest = {payment_results['interest'][i]:.2f}, "
+              f"Amortization = {payment_results['amortization'][i]:.2f}, "
+              f"Remaining Principal = {payment_results['remaining'][i]:.2f}")
+    
+    # ----- PART 2: Discount the Payments with Variable Discount Rates -----
+    # Test data for discounting: a separate array of discount rates (array 2) for each period.
+    discount_rates = [0.006, 0.006, 0.0055, 0.0055, 0.0060, 0.0060, 
+                      0.0058, 0.0058, 0.0057, 0.0057, 0.0059, 0.0059]
+    
+    # Calculate the Net Present Value (NPV) of the payments using the variable discount rates.
+    npv_value = calculate_npv_variable(payment_results["payment"], discount_rates)
+    print(f"\nNet Present Value of the payments (with variable discount rates): {npv_value:.2f}")
 
 
 
