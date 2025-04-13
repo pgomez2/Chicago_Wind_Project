@@ -1,139 +1,45 @@
-import numpy as np
+import pandas as pd
 
-def calculate_payments(principal, rates):
+def calculate_german_mortgage(principal, rates):
     """
-    Calculates the payments for a mortgage with variable interest rates using the French amortization method.
+    Calculates the amortization schedule for a German mortgage.
 
     Parameters:
-      - principal: The initial loan amount.
-      - rates: A list or array of periodic interest rates (in decimal) for each period.
-               The number of rates determines the total number of periods.
+        principal : initial amount of the loan.
+        rates :  sequence of interest rates 
 
     Returns:
-      - A dictionary containing NumPy arrays with:
-          "period": The period number.
-          "payment": The total payment for the period.
-          "interest": The interest portion of the payment.
-          "amortization": The principal portion paid in that period.
-          "remaining": The remaining outstanding principal after the payment.
-          
-    Note: If the rate is zero for any period, the remaining principal is evenly divided over the remaining periods.
+        A Pandas DataFrame with the columns:
+            - 'Period': The period number.
+            - 'Payment': Total payment for the period (constant principal + interest).
+            - 'Principal Paid': The constant amount of principal paid each period.
+            - 'Interest Paid': The interest paid for the period.
+            - 'Remaining Principal': The outstanding principal after the payment.
     """
-    rates = np.array(rates)  # Ensure rates is a NumPy array
-    n = len(rates)
     
-    # Initialize arrays to store the results
-    payment_arr = np.zeros(n)
-    interest_arr = np.zeros(n)
-    amortization_arr = np.zeros(n)
-    remaining_arr = np.zeros(n + 1)
+    n_periods = len(rates)
+    constant_principal = principal / n_periods
     
-    remaining_arr[0] = principal
 
-    # Process each period
-    for i in range(n):
-        remaining_periods = n - i
-        rate = rates[i]
-        
-        if rate == 0:
-            payment = remaining_arr[i] / remaining_periods
-        else:
-            payment = remaining_arr[i] * rate / (1 - (1 + rate) ** (-remaining_periods))
-        
-        payment_arr[i] = payment
-        interest_arr[i] = remaining_arr[i] * rate
-        amortization_arr[i] = payment - interest_arr[i]
-        remaining_arr[i + 1] = remaining_arr[i] - amortization_arr[i]
-
-    return {
-        "period": np.arange(1, n + 1),
-        "payment": payment_arr,
-        "interest": interest_arr,
-        "amortization": amortization_arr,
-        "remaining": remaining_arr[1:]
-    }
-
-if __name__ == "__main__":
-    # Test data: a loan of 100,000 units over 12 periods with variable interest rates
-    principal = 100000
-    rates = [0.005, 0.005, 0.0045, 0.0045, 0.0055, 0.0055, 0.005, 0.005, 0.0048, 0.0048, 0.0052, 0.0052]
+    df = pd.DataFrame({
+        'Period': range(1, n_periods + 1),
+        'Rate': rates
+    })
     
-    results = calculate_payments(principal, rates)
+
+    df['Starting Balance'] = principal - constant_principal * (df['Period'] - 1)
+    df['Interest Paid'] = df['Starting Balance'] * df['Rate']
+    df['Payment'] = constant_principal + df['Interest Paid']
+    df['Principal Paid'] = constant_principal
+    df['Remaining Principal'] = df['Starting Balance'] - constant_principal
+    df = df[['Period', 'Payment', 'Principal Paid', 'Interest Paid', 'Remaining Principal']]
     
-    print("Mortgage Payment Details:")
-    for i in range(len(rates)):
-        print(f"Period {results['period'][i]}: Payment = {results['payment'][i]:.2f}, "
-              f"Interest = {results['interest'][i]:.2f}, "
-              f"Amortization = {results['amortization'][i]:.2f}, "
-              f"Remaining Principal = {results['remaining'][i]:.2f}")
+    return df
 
 
+rates = [0.05, 0.045, 0.04, 0.035, 0.03]
+principal = 100000.0
+amortization= calculate_german_mortgage(principal, rates)
 
 
-
-
-
-
-
-
-import numpy as np
-
-def calculate_npv(cash_flows, discount_rate):
-    """
-    Calculates the Net Present Value (NPV) of a series of cash flows.
-
-    Parameters:
-      - cash_flows: A list or numpy array of cash flows (payments) for each period.
-      - discount_rate: The discount rate per period as a decimal.
-
-    Returns:
-      - The net present value of the cash flows.
-    """
-    # Ensure cash_flows is a NumPy array and create an array of period numbers starting at 1.
-    cash_flows = np.array(cash_flows)
-    periods = np.arange(1, len(cash_flows) + 1)
-    
-    # Calculate the NPV by discounting each payment accordingly.
-    npv = np.sum(cash_flows / (1 + discount_rate) ** periods)
-    return npv
-
-if __name__ == "__main__":
-    # Test data: payments calculated from a mortgage using a variable rate
-    payments = [8606.64, 8606.64, 8583.29, 8583.29, 8621.58, 8621.58, 
-                8606.65, 8606.65, 8602.38, 8602.38, 8607.51, 8607.51]
-    # For example, assume a discount rate of 0.5% per period.
-    discount_rate = 0.005
-    
-    npv_value = calculate_npv(payments, discount_rate)
-    print(f"Net Present Value of the payments: {npv_value:.2f}")
-
-
-
-
-
-    principal = 100000
-    # Variable interest rates for each period (array 1)
-    interest_rates = [0.005, 0.005, 0.0045, 0.0045, 0.0055, 0.0055, 0.005, 0.005, 0.0048, 0.0048, 0.0052, 0.0052]
-    
-    payment_results = calculate_payments(principal, interest_rates)
-    
-    print("Mortgage Payment Details:")
-    for i in range(len(interest_rates)):
-        print(f"Period {payment_results['period'][i]}: Payment = {payment_results['payment'][i]:.2f}, "
-              f"Interest = {payment_results['interest'][i]:.2f}, "
-              f"Amortization = {payment_results['amortization'][i]:.2f}, "
-              f"Remaining Principal = {payment_results['remaining'][i]:.2f}")
-    
-    # ----- PART 2: Discount the Payments with Variable Discount Rates -----
-    # Test data for discounting: a separate array of discount rates (array 2) for each period.
-    discount_rates = [0.006, 0.006, 0.0055, 0.0055, 0.0060, 0.0060, 
-                      0.0058, 0.0058, 0.0057, 0.0057, 0.0059, 0.0059]
-    
-    # Calculate the Net Present Value (NPV) of the payments using the variable discount rates.
-    npv_value = calculate_npv_variable(payment_results["payment"], discount_rates)
-    print(f"\nNet Present Value of the payments (with variable discount rates): {npv_value:.2f}")
-
-
-
-
-
+amortization
